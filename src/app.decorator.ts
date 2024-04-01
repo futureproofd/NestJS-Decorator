@@ -1,16 +1,13 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { tracer, Span } from 'dd-trace';
 
-export const GetRequestHeaders = createParamDecorator(
+export const TraceRequestHeaders = createParamDecorator(
   async (property: string | number, context: ExecutionContext) => {
     const headers = context.switchToHttp().getRequest().headers;
+    const methodName = context.getHandler().name;
 
-    tracer.trace('some tracing happening here', async (span: Span) => {
-      span.addTags({ appId: headers['X-Correlation-Id'] });
-      console.log(
-        '🚀 ~ tracer.trace ~ span:',
-        span.log({ correlationId: headers['X-Correlation-Id'] }),
-      );
+    tracer.trace('Add a trace.', async (span: Span) => {
+      span.addTags({ correlationId: headers[property], methodName });
     });
 
     if (typeof property === 'string' || typeof property === 'number') {

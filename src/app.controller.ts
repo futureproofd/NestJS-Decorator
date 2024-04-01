@@ -1,13 +1,13 @@
 import { Controller, Get, ValidationPipe } from '@nestjs/common';
 import { IsDefined, IsOptional, IsString } from 'class-validator';
 import { AppService } from './app.service';
-import { GetRequestHeaders } from 'app.decorator';
+import { TraceRequestHeaders } from './app.decorator';
 
 export class TestHeaderDTO {
   @IsString()
   @IsDefined()
   @IsOptional()
-  myHeader1?: string;
+  ['x-correlation-id']?: number;
 }
 
 @Controller()
@@ -16,10 +16,13 @@ export class AppController {
 
   @Get()
   getHello(
-    @GetRequestHeaders(new ValidationPipe({ validateCustomDecorators: true }))
+    @TraceRequestHeaders(
+      'x-correlation-id',
+      new ValidationPipe({ validateCustomDecorators: true }),
+    )
     headers: TestHeaderDTO,
   ): string {
-    console.log({ headers });
+    console.log('headers resolved:', headers);
     return this.appService.getHello();
   }
 }
